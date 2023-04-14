@@ -2,6 +2,8 @@
 <%
 	String id = (String) session.getAttribute("id");
 	String[] data = (String[]) session.getAttribute("data");
+	
+	String[] aDPD = session.getAttribute("dpd").toString().split(",");
 %>
 
 
@@ -79,7 +81,7 @@
 							<% if ( id == null) { %>
 							
                             <div class="col-xs-12 td34up">
-								<form id="frmBuscar" name="frmBuscar" action="svlActas" method="post" class="horizontal-form">
+								<form id="frmBuscar" name="frmBuscar" class="horizontal-form" method="post" action="svlActas" >
 									<div class="row">
 										<div class="col-md-3">
 											<label class="control-label">Ámbito:</label>
@@ -95,13 +97,14 @@
 											<div class="form-group">
 												<label id="lblDepartamento" class="control-label">Departamento:</label>
 												<div id="departamentos">
-													<select name="cboDepartamento" id="cboDepartamento" class="form-control" onchange="svlActas" >
-	    												<option selected="selected" value="">--SELECCIONE--</option>
+													<select name="cboDepartamento" id="cboDepartamento" class="form-control" onchange="javascript:document.frmBuscar.submit()" >
+	    												<option <%= ( aDPD[0].equals("-1") ? "selected" : "" ) %> value="-1">--SELECCIONE--</option>
 	    												
-	    												<%  String[][] mDepartamentos = (String[][]) session.getAttribute("departamentos"); 
-	    													for( String[] aDepartamento : mDepartamentos ) { %>
-											            		<option value="<%= aDepartamento[1] %>"><%= aDepartamento[1] %></option>
-											            <% } %>
+	    												<%  if ( session.getAttribute("departamentos") != null ) {
+	    														String[][] mDepartamentos = (String[][]) session.getAttribute("departamentos"); 
+	    														for( String[] aDepartamento : mDepartamentos ) { %>
+											            			<option <%= ( aDPD[0].equals( aDepartamento[0] ) ? "selected" : "" ) %>  value="<%= aDepartamento[0] %>"><%= aDepartamento[1] %></option>
+											            <% } } %>
 													</select>
 												</div>
 											</div>
@@ -111,8 +114,14 @@
 											<div class="form-group">
 												<label id="lblProvincia" class="control-label">Provincia:</label>
 												<div id="provincias">
-													<select id="cdgoProv" name="cdgoProv" class="form-control" onchange="getResultadosDistMuni('140100', '', 'EM', this.value, '');" disabled="disabled">
-														<option selected="selected" value="">SELECCIONE</option>
+													<select id="cboProvincia" name="cboProvincia" class="form-control" onchange="javascript:document.frmBuscar.submit()" <%= aDPD[0].equals("-1") ? "disabled" : "" %> >
+														<option <%= ( aDPD[1].equals("-1") ? "selected" : "" ) %> value="-1">--SELECCIONE--</option>
+	    												
+	    												<% 	if ( session.getAttribute("provincias") != null ) {  
+	    														String[][] mProvincias = (String[][]) session.getAttribute("provincias"); 
+	    														for( String[] aProvincia : mProvincias ) { %>
+											            			<option <%= ( aDPD[1].equals( aProvincia[0] ) ? "selected" : "" ) %> value="<%= aProvincia[0] %>"><%= aProvincia[1] %></option>
+											            <% } } %>
 													</select> 
 												</div>
 											</div>
@@ -123,8 +132,14 @@
 										<div class="col-md-4">
 											<label id="lblDistrito" class="control-label">Distrito:</label>
 											<div id="distritos" class="form-group">
-												<select id="cdgoDist" name="cdgoDist" class="form-control" onchange="getPageWeb('', 'actas', 'getLocalesVotacion', 'divLocal', '&amp;tipoElec=03&amp;ubigeo=' + this.value);" disabled="disabled">
-													<option selected="selected" value="">--SELECCIONE--</option>
+												<select id="cboDistrito" name="cboDistrito" class="form-control" onchange="javascript:document.frmBuscar.submit()" <%= aDPD[1].equals("-1") ? "disabled" : "" %> >
+													<option <%= ( aDPD[2].equals("-1") ? "selected" : "" ) %> value="-1">--SELECCIONE--</option>
+	    												
+	    												<% 	if ( session.getAttribute("distritos") != null ) {  
+	    														String[][] mDistritos = (String[][]) session.getAttribute("distritos"); 
+	    														for( String[] aDistrito : mDistritos ) { %>
+											            			<option <%= ( aDPD[2].equals( aDistrito[0] ) ? "selected" : "" ) %> value="<%= aDistrito[0] %>"><%= aDistrito[1] %></option>
+											            <% } } %>
 												</select>
 											</div>
 										</div>
@@ -132,21 +147,82 @@
 											<div class="form-group">
 												<label class="control-label">Locales:</label>
 												<div id="divLocal"> 
-													<select disabled="disabled" id="actas_ubigeo" name="actas_ubigeo" class="form-control">
-														<option selected="selected" value="-1?-1">--SELECCIONE--</option>
+													<select id="cboLocalVotacion" name="cboLocalVotacion" class="form-control" onchange="javascript:document.frmBuscar.submit()" <%= aDPD[2].equals("-1") ? "disabled" : "" %> >
+														<option <%= ( aDPD[3].equals("-1") ? "selected" : "" ) %> value="-1">--SELECCIONE--</option>
+		    												
+		    												<% 	if ( session.getAttribute("locales") != null ) {  
+		    														String[][] mLocales = (String[][]) session.getAttribute("locales"); 
+		    														for( String[] aLocal : mLocales ) { %>
+												            			<option <%= ( aDPD[3].equals( aLocal[0] ) ? "selected" : "" ) %> value="<%= aLocal[0] %>"><%= aLocal[1] %></option>
+												            <% } } %>
 													</select>
 												</div>
 											</div>
 										</div>
+										
+										<% if ( !aDPD[3].equals("-1") ) { %>
 										<div id="divDetalle" class="ptop20">
+											<div class="col-xs-12 pbot30">
+				                                <p class="subtitle">LISTADO DE MESAS</p>
+				                                <div id="page-wrap">
+				                                    <table class="table17" cellspacing="0">
+				                                        <tbody>
+														<% String[] aMesas = (String[]) session.getAttribute("mesas");
+															int mesas = 9;
+															for (String mesa : aMesas) {
+																if ( mesas++ % 10 == 0) { %> <tr> <% } %>
+														
+
+															<td bgcolor="#C1C1C1" style="cursor: pointer">
+																<a href="svlActas?nroMesa=<%=mesa%>"> <%=mesa%></a>
+                                                            </td>
+														
+														
+														    <% if ( mesas++ % 10 == 0) {   %> <tr> <% } %>
+														<% } %>
+													</tbody>
+				                                    </table>
+				                                </div>
+				                            </div>
+				
+				                            <div class="col-xs-12 cont-recto oculto-leyenda-color-fondo-mesas">
+				                                <div class="col-md-4"><img src="images/procesacon.jpg"> Procesada con imagen</div>
+				                                <div class="col-md-4"><img src="images/procesasin.jpg"> Procesada sin imagen</div>
+				                                <div class="col-md-4"><img src="images/sinprocesa.jpg"> Sin procesar</div>
+				                            </div>
+											
+											<div class="row pbot30">
+				                                <div class="col-lg-8 centered">
+				                                    <div class="col-xs-12 col-md-12 col-lg-12">
+														<table>
+															<tbody>
+																<tr><td colspan="10">
+																        <div class="conte-paginador">
+																             <span class="paginador-txt">Total de mesas: <%= (( String[] ) session.getAttribute("mesas")).length %></span>
+																        </div>
+																      </td></tr>  
+																<tr><td>&nbsp;</td></tr>
+																<tr><td colspan="10">Página: 
+																		<ul class="pagination">																															
+																			<li class="active"><a class="paginador-n1">1</a></li>
+																		</ul>
+																	</td>
+																</tr>
+															</tbody>
+														</table>
+				                                    </div>
+				                                </div>
+				                            </div>
 										</div>
+										<% } %>
+										
 									</div>
 								</form>
-							</div>							
+							</div>					
 							<% } %>
 							
 							<% if ( id != null ) { %>
-							<form id="myform" name="myform" class="horizontal-form" method="post" action="svlActas?id=">
+							<form id="frmActa" name="frmActa" class="horizontal-form" method="post" action="svlActas?id=">
 								<div class="col-md-3">INGRESE EL NÚMERO DE ACTA:</div>
 
 								<div class="col-md-4">
